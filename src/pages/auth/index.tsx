@@ -2,6 +2,7 @@ import { authModelState } from '@/atoms/authModelAtom';
 import AuthModel from '@/components/Modals/AuthModel';
 import NavBar from '@/components/NavBar/NavBar';
 import { auth } from '@/firebase/firebase';
+import useHasMounted from '@/hooks/useHasMounted';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
@@ -13,18 +14,21 @@ type AuthPageProps = {
 };
 
 const AuthPage:React.FC<AuthPageProps> = () => {
+    const hasMounted=useHasMounted();
     const authModel =useRecoilValue(authModelState)
     const [user, loading, error] = useAuthState(auth);
 	const [pageLoading, setPageLoading] = useState(true);
 	const router = useRouter();
 
-	useEffect(() => {
+    useEffect(() => {
 		if (user) {
             router.push("/");
             return;
         }
 		if (!loading && !user) setPageLoading(false);
 	}, [user, router, loading]);
+
+    if(!hasMounted) return null;
 
 	if (pageLoading) return null;
 

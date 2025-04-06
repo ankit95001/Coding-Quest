@@ -22,7 +22,7 @@ import {
       <Box className='flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2 px-2 py-1 font-medium'>
         <Menu isLazy>
           <MenuButton as={Button}>{language}</MenuButton>
-          <MenuList className="bg-dark-fill-3 py-2 px-2" zIndex="popover" >
+          <MenuList className="bg-dark-layer-2 py-2 px-2" zIndex="200" >
             {languages.map(([lang, version]) => (
               <MenuItem
                 key={lang}

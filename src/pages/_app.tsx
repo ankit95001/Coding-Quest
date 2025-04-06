@@ -10,7 +10,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
 				<title>Coding Quest</title>
 				<meta name='viewport' content='width=device-width, initial-scale=1' />
-				<link rel='icon' href='/coding.png' />
+				<link rel='icon' href='/developer.png' />
 				<meta
 					name='description'
 					content='Web application that contains leetcode problems and video solutions'

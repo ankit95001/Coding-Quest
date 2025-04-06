@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import {problems} from '@/mockProblems/problems';
+// import {problems} from '@/mockProblems/problems';
 import { BsCheckCircle } from 'react-icons/bs';
 import Link from 'next/link';
 import { AiFillYoutube } from 'react-icons/ai';
 import YouTube from 'react-youtube';
 import { IoClose } from 'react-icons/io5';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { firestore } from '@/firebase/firebase';
+import { DBProblem } from '@/utils/types/problem';
 type ProblemsTableProps = {
-    
+    setLoadingProblems:React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const ProblemsTable:React.FC<ProblemsTableProps> = () => {
+const ProblemsTable:React.FC<ProblemsTableProps> = ({setLoadingProblems}) => {
     const[youtubePlayer,setYoutubePlayer]=useState({
         isOpen:false,
         videoId:""
@@ -23,7 +26,9 @@ const ProblemsTable:React.FC<ProblemsTableProps> = () => {
             if(e.key==="Escape") closeModel();
         };
         window.addEventListener("keydown",handleEsc);
-    })
+    });
+
+    const problems=useGetProblems(setLoadingProblems)
     return (
         <>
         <tbody className='text-white'>
@@ -91,3 +96,25 @@ const ProblemsTable:React.FC<ProblemsTableProps> = () => {
     )
 }
 export default ProblemsTable;
+
+
+function useGetProblems(setLoadingProblems:React.Dispatch<React.SetStateAction<boolean>>){
+    const [problems,setProblems]=useState<DBProblem[]>([]);
+
+    useEffect(()=>{
+        const getProblems=async()=>{
+            setLoadingProblems(true);
+        
+            const q = query(collection(firestore, "problems"), orderBy("order","asc"));
+            const querySnapshot = await getDocs(q);
+            const temp:DBProblem[]=[]
+            querySnapshot.forEach((doc)=>{
+                temp.push({id:doc.id,...doc.data()} as DBProblem)
+            })
+            setProblems(temp);
+            setLoadingProblems(false)
+        }
+        getProblems()
+    },[setLoadingProblems])
+    return problems;
+}

@@ -7,19 +7,38 @@ import * as monaco from 'monaco-editor';  // Ensure to have monaco-editor types
 import LanguageSelector from '../PreferenceNav/LanguageSelecter';
 import { AiOutlineFullscreen, AiOutlineSetting } from 'react-icons/ai';
 import { CODE_SNIPPETS } from '../constants/Constants';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebase/firebase';
+import { toast } from 'react-toastify';
 
 type PlaygroundProps = {
-    problem: Problem
+    problem: Problem;
+    setSuccess:React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const Playground: React.FC<PlaygroundProps> = ({ problem }) => {
+const Playground: React.FC<PlaygroundProps> = ({ problem,setSuccess }) => {
     const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const [activeTestCaseId, setActiveTestCaseId] = useState<number>(0);
+    const [user]=useAuthState(auth);
+
+    const handleSubmit=async()=>{
+        if(!user){
+            toast.error("Plaese login to run the code",{
+                position:"top-center",
+                autoClose:3000,
+                theme:"dark"
+            })
+            return;
+        }
+        
+    }
+
     const onMount: OnMount = (editor) => {
         editorRef.current = editor;
         editor.focus();
     };
     const [language, setLanguage] = useState<string>("javascript");
+    //user code
     const [value, setValue] = useState<string>("");
     const onSelect = (language: string) => {
         setLanguage(language);
@@ -27,46 +46,42 @@ const Playground: React.FC<PlaygroundProps> = ({ problem }) => {
     }
     return (
         <div className='flex flex-col bg-dark-layer-1 relative overflow-x-hidden'>
-
+            <div className='flex items-center justify-between bg-dark-layer-2 h-11 w-full'>
+                <div className='flex items-center text-white'>
+                    Language :  &#160;
+                    <LanguageSelector language={language} onSelect={onSelect} />
+                </div>
+                <div className='flex items-center m-2'>
+                    <button className='preferenceBtn group'>
+                        <div className='h-4 w-4 text-dark-gray-6 font-bold text-lg'>
+                            <AiOutlineSetting />
+                        </div>
+                        <div className='preferenceBtn-tooltip'>
+                            Setting
+                        </div>
+                    </button>
+                    <button className='preferenceBtn group'>
+                        <div className='h-4 w-4 text-dark-gray-6 font-bold text-lg'>
+                            <AiOutlineFullscreen />
+                        </div>
+                        <div className='preferenceBtn-tooltip'>
+                            FullScreen
+                        </div>
+                    </button>
+                </div>
+            </div>
             <Split className="h-[calc(100vh-94px)]" direction='vertical' sizes={[60, 40]} minSize={60}>
                 <div className="w-full overflow-auto">
-                    <div>
-                        <div className='flex items-center justify-between bg-dark-layer-2 h-11 w-full'>
-                            <div className='flex items-center text-white'>
-                                Language:
-                                <LanguageSelector language={language} onSelect={onSelect} />
-                            </div>
-                            <div className='flex items-center m-2'>
-                                <button className='preferenceBtn group'>
-                                    <div className='h-4 w-4 text-dark-gray-6 font-bold text-lg'>
-                                        <AiOutlineSetting />
-                                    </div>
-                                    <div className='preferenceBtn-tooltip'>
-                                        Setting
-                                    </div>
-                                </button>
-                                <button className='preferenceBtn group'>
-                                    <div className='h-4 w-4 text-dark-gray-6 font-bold text-lg'>
-                                        <AiOutlineFullscreen />
-                                    </div>
-                                    <div className='preferenceBtn-tooltip'>
-                                        FullScreen
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                        <Editor
-                            height="90vh"
-                            theme='vs-dark'
-                            language={language}
-                            defaultValue={CODE_SNIPPETS[language]}
-                            onMount={onMount}
-                            value={value}
-                            onChange={(value) => setValue(value ?? "")}
-                        />
-                    </div>
 
-
+                    <Editor
+                        height="90vh"
+                        theme='vs-dark'
+                        language={language}
+                        defaultValue={CODE_SNIPPETS[language]}
+                        onMount={onMount}
+                        value={value}
+                        onChange={(value) => setValue(value ?? "")}
+                    />
                 </div>
                 <div className='w-full px-5 overflow-auto'>
                     <div className='flex h-10 items-center space-x-6'>
@@ -102,7 +117,7 @@ const Playground: React.FC<PlaygroundProps> = ({ problem }) => {
                     </div>
                 </div>
             </Split>
-            <EditorFooter />
+            <EditorFooter handleSubmit={handleSubmit}/>
         </div>
     )
 }

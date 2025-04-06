@@ -5,6 +5,7 @@ import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import { auth, firestore } from "@/firebase/firebase";
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
+import { doc, setDoc } from 'firebase/firestore';
 
 
 
@@ -40,13 +41,29 @@ const Signup:React.FC<SignupProps> = () => {
             return ;
         }
         try {
+            toast.loading("Creating your account",{position:"top-center",toastId:"loadingToast"});
             const newUser=await createUserWithEmailAndPassword(inputs.email, inputs.password)
             if(!newUser){
                 return;
             }
+            const userData={
+                uid:newUser.user.uid,
+                email: newUser.user.email,
+                password:inputs.password,
+                name : newUser.user.displayName,
+                createdAt:Date.now(),
+                updatedAt:Date.now(),
+                likedProblems:[],
+                dislikedProblems:[],
+                solvedProblems:[],
+                StaredProblems:[],
+            }
+            await setDoc(doc(firestore,"users",newUser.user.uid),userData)
             router.push('/')
         } catch (error:any) {
             toast.error("Registration failed",{position:"top-center",autoClose:3000, theme:"dark"});
+        }finally{
+            toast.dismiss("loadingToast");
         }
     }
 
